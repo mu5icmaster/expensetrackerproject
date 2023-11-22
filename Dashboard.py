@@ -18,6 +18,9 @@ class Dashboard():
         self.username = "Ruri"
         self.email = "raspberryruri@gmail.com"
         self.TotalBudget = tkinter.StringVar()
+        self.TotalBalance = tkinter.StringVar()
+        self.TotalExpense = tkinter.StringVar()
+        self.BalanceLeft = tkinter.StringVar()
 
         # Update the StringVar values if Credentials is provided
         if Credentials:
@@ -163,8 +166,8 @@ class Dashboard():
         Frame11 = (ttk.Frame(Frame1, bootstyle="light", relief="sunken"))
         Frame11.grid(row=1, column=1, sticky="nwes")
 
-        ttk.Label(Frame11, text="Total Budget", font=self.Visuals.Header, anchor="center").grid(row=1, column=1)
-        ttk.Label(Frame11, textvariable=self.TotalBudget, font=self.Visuals.Text, anchor="center").grid(row=2, column=1)
+        ttk.Label(Frame11, text="Total Budget", font=self.Visuals.Header, background=self.Visuals.Theme.colors.get("light"), anchor="center").grid(row=1, column=1)
+        ttk.Label(Frame11, textvariable=self.TotalBudget, font=self.Visuals.Text, background=self.Visuals.Theme.colors.get("light"), anchor="center").grid(row=2, column=1)
 
         Frame1.rowconfigure(1, weight=1)
         Frame1.columnconfigure(1, weight=1)
