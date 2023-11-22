@@ -16,7 +16,7 @@ class Credentials():
         self.username_error_message = tkinter.StringVar()
         self.password = tkinter.StringVar()
         self.password_error_message = tkinter.StringVar()
-        self.image = tkinter.PhotoImage(file='Graphics/1.png')
+        self.image = tkinter.PhotoImage(file='1.png')
 
     def Validate_Username(self, event):
 

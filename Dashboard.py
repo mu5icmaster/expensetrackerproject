@@ -17,6 +17,7 @@ class Dashboard():
         self.Visuals = Visuals
         self.username = "Ruri"
         self.email = "raspberryruri@gmail.com"
+        self.TotalBudget = tkinter.StringVar()
 
         # Update the StringVar values if Credentials is provided
         if Credentials:
@@ -67,9 +68,6 @@ class Dashboard():
         self.FrameSE = ttk.Frame(self.TopLevel, bootstyle="light")
         self.FrameSE.grid(column=1, row=1, sticky="nwes")
 
-        # Create FrameSW
-        self.FrameSW = ttk.Frame(self.TopLevel, bootstyle="light")
-        self.FrameSW.grid(row=1, column=1, sticky="sw")
 
     def Create_Expense(self):
 
@@ -153,26 +151,40 @@ class Dashboard():
         # Add Balance Button
         ttk.Button(self.FrameNE, style="primary-outline", text="Add Balance",
                    command=lambda: AddBalance(self.TopLevel, table, self.username)).grid(row=2, column=3)
-# here lies the items jethow added
+
         # Add Budget Button
         ttk.Button(self.FrameNE, style="primary-outline", text="Add Budget",
                    command=lambda: AddBudget(self.TopLevel, table, self.username)).grid(row=2, column=4)
 
+        # Here lies the items jethow added
+
+        Frame1 = ttk.Frame(self.FrameSE, padding=20, relief="sunken", bootstyle="default")
+        Frame1.grid(row=1, column=1, sticky="nwes")
+        Frame11 = (ttk.Frame(Frame1, bootstyle="light", relief="sunken"))
+        Frame11.grid(row=1, column=1, sticky="nwes")
+
+        ttk.Label(Frame11, text="Total Budget", font=self.Visuals.Header, anchor="center").grid(row=1, column=1)
+        ttk.Label(Frame11, textvariable=self.TotalBudget, font=self.Visuals.Text, anchor="center").grid(row=2, column=1)
+
+        Frame1.rowconfigure(1, weight=1)
+        Frame1.columnconfigure(1, weight=1)
+        Frame11.rowconfigure(1, weight=1)
+        Frame11.rowconfigure(2, weight=3)
+        Frame11.columnconfigure(1, weight=1)
+
+        """
         # Labels for Total Expense, Total Budget, Total Balance, and Total Balance Left
-        ttk.Label(self.FrameSW, text="Total Expense:", font=self.Visuals.Text,background=self.Visuals.Theme.colors.get("light")).grid(row=1, column=1, sticky="nsew")
-        ttk.Label(self.FrameSW, text="Total Budget:", font=self.Visuals.Text,background=self.Visuals.Theme.colors.get("light")).grid(row=2, column=1, sticky="nsew")
-        ttk.Label(self.FrameSW, text="Total Balance:", font=self.Visuals.Text,background=self.Visuals.Theme.colors.get("light")).grid(row=3, column=1, sticky="nsew")
-        ttk.Label(self.FrameSW, text="Total Balance Left:", font=self.Visuals.Text,background=self.Visuals.Theme.colors.get("light")).grid(row=4, column=1, sticky="nsew")
+        ttk.Label(self.FrameSE, text="Total Expense:", font=self.Visuals.Text,background=self.Visuals.Theme.colors.get("light")).grid(row=1, column=2, sticky="nsew")
+        ttk.Label(self.FrameSE, text="Total Budget:", font=self.Visuals.Text,background=self.Visuals.Theme.colors.get("light")).grid(row=1, column=1, sticky="nsew")
+        ttk.Label(self.FrameSE, text="Total Balance:", font=self.Visuals.Text,background=self.Visuals.Theme.colors.get("light")).grid(row=2, column=1, sticky="nsew")
+        ttk.Label(self.FrameSE, text="Total Balance Left:", font=self.Visuals.Text,background=self.Visuals.Theme.colors.get("light")).grid(row=2, column=2, sticky="nsew")
 
         # Display the values in labels
-        TotalExpense = ttk.Label(self.FrameSW, text="0.0", font=self.Visuals.Text,
-                  background=self.Visuals.Theme.colors.get("light")).grid(row=1, column=2, sticky="w")
-        TotalBudget = ttk.Label(self.FrameSW, text="0.0", font=self.Visuals.Text,
-                  background=self.Visuals.Theme.colors.get("light")).grid(row=2, column=2, sticky="w")
-        TotalBalance = ttk.Label(self.FrameSW, text="0.0", font=self.Visuals.Text,
-                  background=self.Visuals.Theme.colors.get("light")).grid(row=3, column=2, sticky="w")
-        TotalLeft = ttk.Label(self.FrameSW, text="0.0", font=self.Visuals.Text,
-                  background=self.Visuals.Theme.colors.get("light")).grid(row=4, column=2, sticky="w")
+        ttk.Label(self.FrameSE, text="0.0", font=self.Visuals.Text, background=self.Visuals.Theme.colors.get("light")).grid(row=1, column=2, sticky="w")
+        ttk.Label(self.FrameSE, text="0.0", font=self.Visuals.Text, background=self.Visuals.Theme.colors.get("light")).grid(row=1, column=1, sticky="w")
+        ttk.Label(self.FrameSE, text="0.0", font=self.Visuals.Text, background=self.Visuals.Theme.colors.get("light")).grid(row=2, column=1, sticky="w")
+        ttk.Label(self.FrameSE, text="0.0", font=self.Visuals.Text, background=self.Visuals.Theme.colors.get("light")).grid(row=2, column=2, sticky="w")
+        """
 
 
         self.FrameNE.rowconfigure(1, weight=1)
@@ -192,11 +204,12 @@ class Dashboard():
             bootstyle="info"
         )
 
-        table.grid(row=1, column=1, sticky="nwes")
-
+        #table.grid(row=1, column=1, sticky="nwes") Jet How ditched my table :(
 
         self.FrameSE.rowconfigure(1, weight=1)
+        self.FrameSE.rowconfigure(2, weight=1)
         self.FrameSE.columnconfigure(1, weight=1)
+        self.FrameSE.columnconfigure(2, weight=1)
 
 
     def StartExpense(self):
