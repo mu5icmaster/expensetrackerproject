@@ -91,7 +91,7 @@ def LoginUser(Credentials):
         return True
 
 
-def AddExpense(date_var, payee_var, description_var, amount_var, payment_mode_var, table, popup, Visuals):
+def AddExpense(date_var, payee_var, description_var, amount_var, payment_mode_var, table, popup, Visuals, info):
 
     if not date_var.get() or not payee_var.get() or not description_var.get() or not amount_var.get() or not payment_mode_var.get():
         mb.Messagebox.ok(title='Fields empty!', message="Please fill all the missing fields before pressing the add button!", parent=popup)
@@ -100,18 +100,25 @@ def AddExpense(date_var, payee_var, description_var, amount_var, payment_mode_va
 
         with sqlite3.connect("ExpenseMate.db") as db:
             cursor = db.cursor()
+
+            cursor.execute("SELECT UserID FROM UserTable WHERE username = ?", (info.username,))
+            userID = cursor.fetchone()[0]
+
             cursor.execute(
-                'INSERT INTO ExpenseTracker (Date, Payee, Description, Amount, ModeOfPayment) VALUES (?, ?, ?, ?, ?)',
+                'INSERT INTO ExpenseTracker (Date, Payee, Description, Amount, ModeOfPayment, userID) VALUES (?, ?, ?, ?, ?, ?)',
                 # SQL code for inserting values
-                (date_var.get(), payee_var.get(), description_var.get(), amount_var.get(), payment_mode_var.get())
+                (date_var.get(), payee_var.get(), description_var.get(), amount_var.get(), payment_mode_var.get(), userID)
                 # Parameters to insert into the values in the SQL code
             )
             db.commit()
 
         popup.destroy()
-        Dashboard.UpdateTable(table, Visuals)
+        #Dashboard.UpdateTable(table, Visuals)
+        UpdateDashboardInfo(info)
 
-def EditExpense(date_var, payee_var, description_var, amount_var, payment_mode_var, table, popup, Visuals, id):
+
+
+def EditExpense(date_var, payee_var, description_var, amount_var, payment_mode_var, table, popup, Visuals, id, info):
 
     if not date_var.get() or not payee_var.get() or not description_var.get() or not amount_var.get() or not payment_mode_var.get():
         #mb.Messagebox.ok(title='Fields empty!', message="Please fill all the missing fields before pressing the add button!", parent=popup)
@@ -127,17 +134,18 @@ def EditExpense(date_var, payee_var, description_var, amount_var, payment_mode_v
 
         popup.destroy()
         #mb.Messagebox.ok(title='Data edited', message='We have updated the data and stored in the database as you wanted', parent=popup)
-        Dashboard.UpdateTable(table, Visuals)
+        UpdateDashboardInfo(info)
 
 
-def DeleteExpense(values_selected):
+def DeleteExpense(values_selected, info):
     with sqlite3.connect("ExpenseMate.db") as db:
         cursor = db.cursor()
         cursor.execute('DELETE FROM ExpenseTracker WHERE ID=%d' % values_selected[
         0])  # SQL code to remove data from ExpenseTracker Table
         db.commit()
+        UpdateDashboardInfo(info)
 
-def AddBudget(popup, budget, username):
+def AddBudget(popup, budget, username, info):
 
     if not budget.get():
         mb.Messagebox.ok(title='Fields empty!', message="Please fill all the missing fields before pressing the add button!", parent=popup)
@@ -157,6 +165,7 @@ def AddBudget(popup, budget, username):
             db.commit()
 
         popup.destroy()
+        UpdateDashboardInfo(info)
         #mb.Messagebox.ok(title='Data edited', message='Data successfully updated!', parent=popup)
 
 def CollectTotalBudget(username):
@@ -168,7 +177,7 @@ def CollectTotalBudget(username):
         """.config(text=f'{result:.2f}')"""
 
 
-def AddBalance(popup, balance, username):
+def AddBalance(popup, balance, username, info):
     if not balance.get():
         mb.Messagebox.ok(title='Fields empty!',
                          message="Please fill all the missing fields before pressing the add button!",
@@ -189,7 +198,10 @@ def AddBalance(popup, balance, username):
             budget_db.commit()
 
         popup.destroy()
+        UpdateDashboardInfo(info)
         #mb.Messagebox.ok(title='Data edited', message='Data successfully updated!', parent=popup)
+
+
 
 # all the functions i need to call into the dashboard
 def CollectTotalBalance(username):
@@ -224,4 +236,25 @@ def BalanceLeft(username, TotalBalance):
         budget = result1[0]
         expenses = result2[0]
         Balance_Left = budget - expenses
-        """.config(text=f'{result:.2f}')"""
+        #.config(text=f'{result:.2f}')
+        
+
+
+def UpdateDashboardInfo(Info):
+    with sqlite3.connect("ExpenseMate.db") as db:
+        cursor = db.cursor()
+        username = Info.username
+
+        cursor.execute("SELECT UserID FROM UserTable WHERE username = ?", (username,))
+        userID = cursor.fetchone()
+
+        cursor.execute("SELECT SUM(Budget) FROM Budget WHERE User_ID = ?", userID)
+        Info.TotalBudget.set(cursor.fetchone()[0])
+
+        cursor.execute("SELECT SUM(Balance) FROM Budget WHERE User_ID = ?", userID)
+        Info.TotalBalance.set(cursor.fetchone()[0])
+
+        cursor.execute("SELECT SUM(Amount) FROM ExpenseTracker WHERE userID = ?", userID)
+        Info.TotalExpense.set(cursor.fetchone()[0])
+
+        Info.BalanceLeft.set(Info.TotalBalance.get() - Info.TotalExpense.get())

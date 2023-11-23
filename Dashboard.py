@@ -17,10 +17,11 @@ class Dashboard():
         self.Visuals = Visuals
         self.username = "Ruri"
         self.email = "raspberryruri@gmail.com"
-        self.TotalBudget = tkinter.StringVar()
-        self.TotalBalance = tkinter.StringVar()
-        self.TotalExpense = tkinter.StringVar()
-        self.BalanceLeft = tkinter.StringVar()
+        self.TotalBudget = tkinter.IntVar()
+        self.TotalBudget.set(0)
+        self.TotalBalance = tkinter.IntVar()
+        self.TotalExpense = tkinter.IntVar()
+        self.BalanceLeft = tkinter.IntVar()
 
         # Update the StringVar values if Credentials is provided
         if Credentials:
@@ -53,6 +54,9 @@ class Dashboard():
         # Email (Change)
         ttk.Label(self.FrameW, text=self.email, font=self.Visuals.Text, anchor="center").grid(row=4, column=1, sticky="nwe")
 
+        # Vertical Separator
+        ttk.Separator(self.FrameW, orient="vertical").grid(row=1, column=2, rowspan=6, sticky="nes")
+
         # Resizing
         self.FrameW.rowconfigure(0, weight=0)
         self.FrameW.rowconfigure(1, weight=1)
@@ -62,6 +66,7 @@ class Dashboard():
         self.FrameW.rowconfigure(5, weight=1)
         self.FrameW.rowconfigure(6, weight=1)
         self.FrameW.columnconfigure(1, weight=1)
+        self.FrameW.columnconfigure(2, weight=0)
 
         # Creates Top Right Frame
         self.FrameNE = ttk.Frame(self.TopLevel, bootstyle="light")
@@ -90,14 +95,14 @@ class Dashboard():
 
         # Edit Expense Button
         ttk.Button(self.FrameNE, style="primary-outline", text="Edit Expense",
-                   command=lambda: EditExpense(self.TopLevel, table, self.Visuals)).grid(row=2, column=3)
+                   command=lambda: EditExpense(self.TopLevel, table, self.Visuals, self)).grid(row=2, column=3)
 
         # Delete Expense Button
         ttk.Button(self.FrameNE, style="primary-outline", text="Delete Expense",
-                   command=lambda: DeleteExpense(table, self.Visuals, self.TopLevel)).grid(row=2, column=4)
+                   command=lambda: DeleteExpense(table, self.Visuals, self.TopLevel, self)).grid(row=2, column=4)
 
         # Add Expense Button
-        ttk.Button(self.FrameNE, style="primary-outline", text="Add Expense", command=lambda: AddExpense(self.TopLevel, table, self.Visuals)).grid(row=2, column=5)
+        ttk.Button(self.FrameNE, style="primary-outline", text="Add Expense", command=lambda: AddExpense(self.TopLevel, table, self.Visuals, self)).grid(row=2, column=5)
 
         self.FrameNE.rowconfigure(1, weight=1)
         self.FrameNE.rowconfigure(2, weight=1)
@@ -107,30 +112,55 @@ class Dashboard():
         self.FrameNE.columnconfigure(4, weight=0)
         self.FrameNE.columnconfigure(5, weight=1)
 
-
-
         # Creates Table
-        columns = ('ID', 'Date', 'Payee', 'Description', 'Amount', 'Mode of Payment')
-        table = ttk.Treeview(self.FrameSE, show="headings", columns=columns, bootstyle="info")
+
+        coldata = [
+            {"text": "ID No.", "anchor": "center", "stretch": True},
+            {"text": "Date", "anchor": "center", "stretch": True},
+            {"text": "Payee", "anchor": "center", "stretch": True},
+            {"text": "Description", "anchor": "center", "stretch": True},
+            {"text": "Amount", "anchor": "center", "stretch": True},
+            {"text": "Mode of Payment", "anchor": "center", "stretch": True}
+            ]
+
+        rowdata=[]
+
+        table = Tableview(
+            master=self.FrameSE,
+            coldata=coldata,
+            rowdata=rowdata,
+            searchable=True,
+            autofit=True,
+            autoalign=True,
+            stripecolor=(self.Visuals.Theme.colors.get("light"), None),
+            bootstyle="info"
+        )
+
+        # Removes default horizontal scrollbar and creates a vertical Scrollbar
+
+        scrollbar = None
+        print(table.winfo_children())
+        for child in table.winfo_children():
+            if type(child) == tkinter.ttk.Scrollbar and isinstance(child, tkinter.ttk.Scrollbar):
+                scrollbar = child
+            if type(child) == tkinter.ttk.Treeview and isinstance(child, tkinter.ttk.Treeview):
+                parent = child
+
+        scrollbar.forget()
+
+        Scrollbar = ttk.Scrollbar(self.FrameSE, orient="vertical", command=parent.yview, bootstyle="rounded")
+        table.configure(yscrollcommand=Scrollbar.set)
+
         table.grid(row=1, column=1, sticky="nwes")
+        Scrollbar.grid(row=1, column=2, sticky="nes")
 
-        # Inserts Table Headings
-        table.heading('ID', text='ID No.', anchor="center")
-        table.heading('Date', text='Date', anchor="center")
-        table.heading('Payee', text='Payee', anchor="center")
-        table.heading('Description', text='Description', anchor="center")
-        table.heading('Amount', text='Amount', anchor="center")
-        table.heading('Mode of Payment', text='Mode of Payment', anchor="center")
-
-        # Creates Scrollbar
-        Y_Scroller = ttk.Scrollbar(self.FrameSE, orient="vertical", command=table.yview, bootstyle="secondary-round")
-        Y_Scroller.grid(row=1, column=2, sticky="ns")
-        table.config(yscrollcommand=Y_Scroller.set)
+        UpdateTable(table)
 
         self.FrameSE.rowconfigure(1, weight=1)
         self.FrameSE.columnconfigure(1, weight=1)
+        self.FrameSE.columnconfigure(2, weight=0)
 
-        UpdateTable(table, self.Visuals)
+        #UpdateTable(table, self.Visuals)
 
     def Create_Budget(self):
 
@@ -153,15 +183,15 @@ class Dashboard():
 
         # Add Balance Button
         ttk.Button(self.FrameNE, style="primary-outline", text="Add Balance",
-                   command=lambda: AddBalance(self.TopLevel, table, self.username)).grid(row=2, column=3)
+                   command=lambda: AddBalance(self.TopLevel, table, self.username, self)).grid(row=2, column=3)
 
         # Add Budget Button
         ttk.Button(self.FrameNE, style="primary-outline", text="Add Budget",
-                   command=lambda: AddBudget(self.TopLevel, table, self.username)).grid(row=2, column=4)
+                   command=lambda: AddBudget(self.TopLevel, table, self.username, self)).grid(row=2, column=4)
 
         # Here lies the items jethow added
 
-        Frame1 = ttk.Frame(self.FrameSE, padding=20, relief="sunken", bootstyle="default")
+        Frame1 = ttk.Frame(self.FrameSE, padding=20, bootstyle="default")
         Frame1.grid(row=1, column=1, sticky="nwes")
         Frame11 = (ttk.Frame(Frame1, bootstyle="light", relief="sunken"))
         Frame11.grid(row=1, column=1, sticky="nwes")
@@ -172,7 +202,7 @@ class Dashboard():
         Frame1.rowconfigure(1, weight=1)
         Frame1.columnconfigure(1, weight=1)
         Frame11.rowconfigure(1, weight=1)
-        Frame11.rowconfigure(2, weight=3)
+        Frame11.rowconfigure(2, weight=1)
         Frame11.columnconfigure(1, weight=1)
 
         """
@@ -232,11 +262,10 @@ class Dashboard():
         for widget in frame.winfo_children():
             widget.destroy()
 
+def UpdateTable(table):
 
-def UpdateTable(table, Visuals):
-
-    # Resets the Table
-    table.delete(*table.get_children())
+    # Resets Table Rows
+    table.delete_rows()
 
     # Fetches Data from Database
     with sqlite3.connect("ExpenseMate.db") as db:
@@ -245,15 +274,13 @@ def UpdateTable(table, Visuals):
 
     # Inserts Data into Table
     for values in data:
-        table.insert("", tkinter.END, values=values)
+        table.insert_row(values=values)
 
-    # Center align specific columns (adjust column indexes accordingly)
-    center_aligned_columns = [0, 1, 2, 3, 4, 5]
-    for col in center_aligned_columns:
-        table.column(table['columns'][col], anchor='center')
+    # Refreshes Table
+    table.load_table_data()
 
 
-def AddExpense(master, table, Visuals):
+def AddExpense(master, table, Visuals, info):
     # Create a Toplevel window for the pop-up
     popup = ttk.Toplevel(master)
     popup.title("Add Expense")
@@ -297,7 +324,7 @@ def AddExpense(master, table, Visuals):
     payment_mode_entry.bind("<FocusOut>", lambda event, x=payment_mode_var:validate_input(event, x))
 
     # Button to submit the form
-    submit_button = ttk.Button(popup, text="Submit", command=lambda: Database.AddExpense(date_var, payee_var, description_var, amount_var, payment_mode_var, table, popup, Visuals))
+    submit_button = ttk.Button(popup, text="Submit", command=lambda: Database.AddExpense(date_var, payee_var, description_var, amount_var, payment_mode_var, table, popup, Visuals, info))
     submit_button.grid(row=5, column=1, pady=10)
 
     # Resizes
@@ -313,14 +340,17 @@ def AddExpense(master, table, Visuals):
     # Wait for the pop-up window to be destroyed before allowing the main window to regain focus
     master.wait_window(popup)
 
-def EditExpense(master, table, Visuals):
-    selected_item = table.selection()
-    if not selected_item:
+    UpdateTable(table)
+
+def EditExpense(master, table, Visuals, info):
+
+    try:
+        row = table.get_row(iid=table.view.selection()[0])
+    except:
         dialogs.Messagebox.ok(title="Error", message="Please select an expense to edit.", parent=master)
         return
 
-    # Get values from the selected row
-    item_values = table.item(selected_item)['values']
+    print(row.values)
 
     # Create a Toplevel window for the pop-up
     popup = ttk.Toplevel(master)
@@ -333,12 +363,12 @@ def EditExpense(master, table, Visuals):
     popup.grab_set()
 
     # StringVars for user inputs
-    id = item_values[0]
-    date_var = tkinter.StringVar(value=item_values[1])
-    payee_var = tkinter.StringVar(value=item_values[2])
-    description_var = tkinter.StringVar(value=item_values[3])
-    amount_var = tkinter.StringVar(value=item_values[4])
-    payment_mode_var = tkinter.StringVar(value=item_values[5])
+    id = row.values[0]
+    date_var = tkinter.StringVar(value=row.values[1])
+    payee_var = tkinter.StringVar(value=row.values[2])
+    description_var = tkinter.StringVar(value=row.values[3])
+    amount_var = tkinter.StringVar(value=row.values[4])
+    payment_mode_var = tkinter.StringVar(value=row.values[5])
 
     # Labels and Entries
     ttk.Label(popup, text="Date:").grid(row=0, column=0, padx=10, pady=5)
@@ -360,13 +390,12 @@ def EditExpense(master, table, Visuals):
 
     ttk.Label(popup, text="Mode of Payment:").grid(row=4, column=0, padx=10, pady=5)
     payment_mode_entry = ttk.Combobox(popup, textvariable=payment_mode_var, values=["Cash", "Credit Card", "Debit Card", "TNG E-Wallet"])
-    payment_mode_entry.set("Select an item")
     payment_mode_entry.grid(row=4, column=1, padx=10, pady=5)
 
     payment_mode_entry.bind("<FocusOut>", lambda event, x=payment_mode_var:validate_input(event, x))
 
     # Button to submit the form
-    submit_button = ttk.Button(popup, text="Submit", command=lambda: Database.EditExpense(date_var, payee_var, description_var, amount_var, payment_mode_var, table, popup, Visuals, id))
+    submit_button = ttk.Button(popup, text="Submit", command=lambda: Database.EditExpense(date_var, payee_var, description_var, amount_var, payment_mode_var, table, popup, Visuals, id, info))
     submit_button.grid(row=5, column=1, pady=10)
 
     # Resizes
@@ -382,22 +411,26 @@ def EditExpense(master, table, Visuals):
     # Wait for the pop-up window to be destroyed before allowing the main window to regain focus
     master.wait_window(popup)
 
-def DeleteExpense(table, Visuals, parent):
-    if not table.selection():  # If there is no table selected
-        dialogs.Messagebox.ok(title='No record selected!', message='Please select a record to delete!', parent=parent)
+    UpdateTable(table)
+
+def DeleteExpense(table, Visuals, parent, info):
+
+    try:
+        row = table.get_row(iid=table.view.selection()[0])
+    except:
+        dialogs.Messagebox.ok(title="Error", message="Please select an expense to delete.", parent=parent)
         return
-    current_selected_expense = table.item(table.focus())  # Set current selected item in table
-    values_selected = current_selected_expense[
-        'values']  # Selecting the Values needed to be deleted (Which is values)
+
     surety = dialogs.Messagebox.yesno(title="Delete expense?", message="Action cannot be undone.", parent=parent)
+
     if surety == "Yes":
-        Database.DeleteExpense(values_selected)
+        Database.DeleteExpense(row.values, info)
         dialogs.Messagebox.ok(title='Record deleted!',
                               message='The record you wanted to delete has been deleted successfully', parent=parent)
-    UpdateTable(table, Visuals)
+    UpdateTable(table)
 
 
-def AddBudget(master, table, username):
+def AddBudget(master, table, username, info):
     # Create a Toplevel window for the pop-up
     popup = ttk.Toplevel(master)
     popup.title("Add Budget")
@@ -417,7 +450,7 @@ def AddBudget(master, table, username):
     payee_entry.grid(row=1, column=1, padx=10, pady=5)
 
     # Button to submit the form
-    submit_button = ttk.Button(popup, text="Submit",command=lambda: Database.AddBudget(popup, budget_var, username), bootstyle="info")
+    submit_button = ttk.Button(popup, text="Submit",command=lambda: Database.AddBudget(popup, budget_var, username, info), bootstyle="info")
     submit_button.grid(row=2, column=0, pady=10, columnspan=2)
 
     # Resizes
@@ -429,7 +462,7 @@ def AddBudget(master, table, username):
     # Wait for the pop-up window to be destroyed before allowing the main window to regain focus
     master.wait_window(popup)
 
-def AddBalance(master, table, username):
+def AddBalance(master, table, username, info):
     # Create a Toplevel window for the pop-up
     popup = ttk.Toplevel(master)
     popup.title("Add Balance")
@@ -449,7 +482,7 @@ def AddBalance(master, table, username):
     payee_entry.grid(row=1, column=1, padx=10, pady=5)
 
     # Button to submit the form
-    submit_button = ttk.Button(popup, text="Submit",command=lambda: Database.AddBalance(popup, balance_var, username), bootstyle="info")
+    submit_button = ttk.Button(popup, text="Submit",command=lambda: Database.AddBalance(popup, balance_var, username, info), bootstyle="info")
     submit_button.grid(row=2, column=0, pady=10, columnspan=2)
 
     # Resizes
