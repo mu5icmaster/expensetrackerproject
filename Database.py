@@ -150,12 +150,13 @@ def AddBalance(values, Dashboard):
 
     UpdateDashboardInfo(Dashboard)
 
-def Reset(username):
+def Reset(Dashboard):
     with sqlite3.connect("ExpenseMate.db") as db:
         cursor = db.cursor()
-        cursor.execute("SELECT userID FROM UserTable WHERE username = ?", (username, ))
+        cursor.execute("SELECT userID FROM UserTable WHERE username = ?", (Dashboard.username, ))
         userID = cursor.fetchone()[0]
         cursor.execute("DELETE FROM Budget WHERE user_ID = ?", (userID,))
+    UpdateDashboardInfo(Dashboard)
 
 def UpdateDashboardInfo(Dashboard):
     with sqlite3.connect("ExpenseMate.db") as db:

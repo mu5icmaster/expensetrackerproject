@@ -22,6 +22,7 @@ class Dashboard():
         self.TotalBalance = tkinter.IntVar()
         self.TotalExpense = tkinter.IntVar()
         self.BalanceLeft = tkinter.IntVar()
+        self.Counter = 1
 
         # Update the StringVar values if Credentials is provided
         if Credentials:
@@ -75,6 +76,24 @@ class Dashboard():
         # Creates Bottom Right Frame
         self.FrameSE = ttk.Frame(self.TopLevel, bootstyle="light")
         self.FrameSE.grid(column=1, row=1, sticky="nwes")
+
+        self.TopLevel.bind("<Enter>", self.check_notification)
+
+    def check_notification(self, *args):
+        try:
+            if self.BalanceLeft.get() >= 0:
+                print("update")
+                self.Counter = 1
+            elif self.BalanceLeft.get() < 0 and self.Counter == 1:
+                print("update2")
+                self.Counter = 0
+                dialogs.Messagebox.ok(title="Warning", message="You have exceeded your total balance.",
+                                      parent=self.TopLevel)
+
+
+        except Exception as e:
+            print(f"Error in check_notification: {e}")
+
 
 
     def Create_Expense(self):
@@ -567,7 +586,7 @@ def AddBalance(Dashboard):
                 return
 
         try:
-            Database.AddBudget(Values, Dashboard)
+            Database.AddBalance(Values, Dashboard)
             dialogs.Messagebox.ok(title="Success!", message="Your balance has been added!", parent=popup)
             popup.destroy()
 
