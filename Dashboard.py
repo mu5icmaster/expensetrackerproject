@@ -189,15 +189,17 @@ class Dashboard():
         ttk.Button(self.FrameNE, style="primary-outline", text="Add Budget",
                    command=lambda: AddBudget(self.TopLevel, table, self.username, self)).grid(row=2, column=4)
 
-        # Here lies the items jethow added
+        # Frame 1 (top left frame)
 
         Frame1 = ttk.Frame(self.FrameSE, padding=20, bootstyle="default")
         Frame1.grid(row=1, column=1, sticky="nwes")
-        Frame11 = (ttk.Frame(Frame1, bootstyle="light", relief="sunken"))
+        Frame11 = ttk.Frame(Frame1, bootstyle="light")
         Frame11.grid(row=1, column=1, sticky="nwes")
 
-        ttk.Label(Frame11, text="Total Budget", font=self.Visuals.Header, background=self.Visuals.Theme.colors.get("light"), anchor="center").grid(row=1, column=1)
-        ttk.Label(Frame11, textvariable=self.TotalBudget, font=self.Visuals.Text, background=self.Visuals.Theme.colors.get("light"), anchor="center").grid(row=2, column=1)
+        ttk.Label(Frame11, text="Total Budget", font=self.Visuals.BoldText,
+                  background=self.Visuals.Theme.colors.get("light"), anchor="center").grid(row=1, column=1)
+        ttk.Label(Frame11, textvariable=self.TotalBudget, font=self.Visuals.BigText,
+                  background=self.Visuals.Theme.colors.get("light"), anchor="center").grid(row=2, column=1, sticky="n")
 
         Frame1.rowconfigure(1, weight=1)
         Frame1.columnconfigure(1, weight=1)
@@ -255,7 +257,6 @@ class Dashboard():
         self.DestroyWidgets(self.FrameNE)
         self.DestroyWidgets(self.FrameSE)
         self.FrameW.forget()
-        self.FrameSW.forget()
         self.Create_Budget()
 
     def DestroyWidgets(self, frame):
