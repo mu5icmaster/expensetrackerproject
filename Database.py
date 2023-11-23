@@ -201,45 +201,6 @@ def AddBalance(popup, balance, username, info):
         UpdateDashboardInfo(info)
         #mb.Messagebox.ok(title='Data edited', message='Data successfully updated!', parent=popup)
 
-
-
-# all the functions i need to call into the dashboard
-def CollectTotalBalance(username):
-    with sqlite3.connect("ExpenseMate.db") as db:
-        user_cursor = db.cursor()
-        user_cursor.execute("SELECT SUM(Balance) FROM Budget WHERE username = ?", (username,))
-        result = user_cursor.fetchone()
-        result = result[0]
-        """TotalBalance.config(text=f'{result:.2f}')"""
-def CollectTotalBudget(username):
-    with sqlite3.connect("ExpenseMate.db") as db:
-        user_cursor = db.cursor()
-        user_cursor.execute("SELECT SUM(Budget) FROM Budget WHERE username = ?", (username,))
-        result = user_cursor.fetchone()
-        result = result[0]
-        """.config(text=f'{result:.2f}')"""
-def CollectTotalExpenses(username, TotalBalance):
-    with sqlite3.connect("ExpenseMate.db") as db:
-        user_cursor = db.cursor()
-        user_cursor.execute("SELECT SUM(Amount) FROM ExpenseTracker WHERE username = ?", (username,))
-        result = user_cursor.fetchone()
-        result = result[0]
-        """.config(text=f'{result:.2f}')"""
-def BalanceLeft(username, TotalBalance):
-    with sqlite3.connect("ExpenseMate.db") as db:
-        user_cursor = db.cursor()
-        user_cursor.execute("SELECT SUM(Amount) FROM ExpenseTracker WHERE username = ?", (username,))
-        result1 = user_cursor.fetchone()
-        user_cursor = db.cursor()
-        user_cursor.execute("SELECT SUM(Budget) FROM Budget WHERE username = ?", (username,))
-        result2 = user_cursor.fetchone()
-        budget = result1[0]
-        expenses = result2[0]
-        Balance_Left = budget - expenses
-        #.config(text=f'{result:.2f}')
-        
-
-
 def UpdateDashboardInfo(Info):
     with sqlite3.connect("ExpenseMate.db") as db:
         cursor = db.cursor()

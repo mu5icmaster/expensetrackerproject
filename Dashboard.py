@@ -139,7 +139,6 @@ class Dashboard():
         # Removes default horizontal scrollbar and creates a vertical Scrollbar
 
         scrollbar = None
-        print(table.winfo_children())
         for child in table.winfo_children():
             if type(child) == tkinter.ttk.Scrollbar and isinstance(child, tkinter.ttk.Scrollbar):
                 scrollbar = child
@@ -151,8 +150,8 @@ class Dashboard():
         Scrollbar = ttk.Scrollbar(self.FrameSE, orient="vertical", command=parent.yview, bootstyle="rounded")
         table.configure(yscrollcommand=Scrollbar.set)
 
-        table.grid(row=1, column=1, sticky="nwes")
-        Scrollbar.grid(row=1, column=2, sticky="nes")
+        table.grid(row=1, column=1, sticky="nwes", rowspan=2)
+        Scrollbar.grid(row=1, column=2, sticky="nes", rowspan=2)
 
         UpdateTable(table)
 
@@ -207,20 +206,58 @@ class Dashboard():
         Frame11.rowconfigure(2, weight=1)
         Frame11.columnconfigure(1, weight=1)
 
-        """
-        # Labels for Total Expense, Total Budget, Total Balance, and Total Balance Left
-        ttk.Label(self.FrameSE, text="Total Expense:", font=self.Visuals.Text,background=self.Visuals.Theme.colors.get("light")).grid(row=1, column=2, sticky="nsew")
-        ttk.Label(self.FrameSE, text="Total Budget:", font=self.Visuals.Text,background=self.Visuals.Theme.colors.get("light")).grid(row=1, column=1, sticky="nsew")
-        ttk.Label(self.FrameSE, text="Total Balance:", font=self.Visuals.Text,background=self.Visuals.Theme.colors.get("light")).grid(row=2, column=1, sticky="nsew")
-        ttk.Label(self.FrameSE, text="Total Balance Left:", font=self.Visuals.Text,background=self.Visuals.Theme.colors.get("light")).grid(row=2, column=2, sticky="nsew")
+        # Frame 2 (top right frame)
+        Frame2 = ttk.Frame(self.FrameSE, padding=20, bootstyle="default")
+        Frame2.grid(row=1, column=2, sticky="nwes")
+        Frame21 = ttk.Frame(Frame2, bootstyle="light")
+        Frame21.grid(row=1, column=1, sticky="nwes")
 
-        # Display the values in labels
-        ttk.Label(self.FrameSE, text="0.0", font=self.Visuals.Text, background=self.Visuals.Theme.colors.get("light")).grid(row=1, column=2, sticky="w")
-        ttk.Label(self.FrameSE, text="0.0", font=self.Visuals.Text, background=self.Visuals.Theme.colors.get("light")).grid(row=1, column=1, sticky="w")
-        ttk.Label(self.FrameSE, text="0.0", font=self.Visuals.Text, background=self.Visuals.Theme.colors.get("light")).grid(row=2, column=1, sticky="w")
-        ttk.Label(self.FrameSE, text="0.0", font=self.Visuals.Text, background=self.Visuals.Theme.colors.get("light")).grid(row=2, column=2, sticky="w")
-        """
+        ttk.Label(Frame21, text="Total Expenses", font=self.Visuals.BoldText,
+                  background=self.Visuals.Theme.colors.get("light"), anchor="center").grid(row=1, column=1)
+        ttk.Label(Frame21, textvariable=self.TotalExpense, font=self.Visuals.BigText,
+                  background=self.Visuals.Theme.colors.get("light"), anchor="center").grid(row=2, column=1, sticky="n")
 
+        Frame2.rowconfigure(1, weight=1)
+        Frame2.columnconfigure(1, weight=1)
+        Frame21.rowconfigure(1, weight=1)
+        Frame21.rowconfigure(2, weight=1)
+        Frame21.columnconfigure(1, weight=1)
+
+        # Frame 3 (bottom left frame)
+        Frame3 = ttk.Frame(self.FrameSE, padding=20, bootstyle="default")
+        Frame3.grid(row=2, column=1, sticky="nwes")
+        Frame31 = ttk.Frame(Frame3, bootstyle="light")
+        Frame31.grid(row=1, column=1, sticky="nwes")
+
+        ttk.Label(Frame31, text="Total Balance", font=self.Visuals.BoldText,
+                  background=self.Visuals.Theme.colors.get("light"), anchor="center").grid(row=1, column=1)
+        ttk.Label(Frame31, textvariable=self.TotalBalance, font=self.Visuals.BigText,
+                  background=self.Visuals.Theme.colors.get("light"), anchor="center").grid(row=2, column=1, sticky="n")
+
+        Frame3.rowconfigure(1, weight=1)
+        Frame3.columnconfigure(1, weight=1)
+        Frame31.rowconfigure(1, weight=1)
+        Frame31.rowconfigure(2, weight=1)
+        Frame31.columnconfigure(1, weight=1)
+
+        # Frame 4 (bottom right frame)
+        Frame4 = ttk.Frame(self.FrameSE, padding=20, bootstyle="default")
+        Frame4.grid(row=2, column=2, sticky="nwes")
+        Frame41 = ttk.Frame(Frame4, bootstyle="light")
+        Frame41.grid(row=1, column=1, sticky="nwes")
+
+        ttk.Label(Frame41, text="Balance Left", font=self.Visuals.BoldText,
+                  background=self.Visuals.Theme.colors.get("light"), anchor="center").grid(row=1, column=1)
+        ttk.Label(Frame41, textvariable=self.BalanceLeft, font=self.Visuals.BigText,
+                  background=self.Visuals.Theme.colors.get("light"), anchor="center").grid(row=2, column=1, sticky="n")
+
+        Frame4.rowconfigure(1, weight=1)
+        Frame4.columnconfigure(1, weight=1)
+        Frame41.rowconfigure(1, weight=1)
+        Frame41.rowconfigure(2, weight=1)
+        Frame41.columnconfigure(1, weight=1)
+
+        Database.UpdateDashboardInfo(self)
 
         self.FrameNE.rowconfigure(1, weight=1)
         self.FrameNE.rowconfigure(2, weight=1)
@@ -350,8 +387,6 @@ def EditExpense(master, table, Visuals, info):
     except:
         dialogs.Messagebox.ok(title="Error", message="Please select an expense to edit.", parent=master)
         return
-
-    print(row.values)
 
     # Create a Toplevel window for the pop-up
     popup = ttk.Toplevel(master)
@@ -511,7 +546,7 @@ if __name__ == "__main__":
     root.withdraw()
 
     MainPage = Dashboard(root, Theme.Visuals(style="flatly"))
-    #MainPage.Create_Expense()
-    MainPage.Create_Budget()
+    MainPage.Create_Expense()
+    #MainPage.Create_Budget()
 
     root.mainloop()
