@@ -91,143 +91,99 @@ def LoginUser(Credentials):
         return True
 
 
-def AddExpense(date_var, payee_var, description_var, amount_var, payment_mode_var, table, popup, Visuals, info):
+def AddExpense(Values, Dashboard):
 
-    if not date_var.get() or not payee_var.get() or not description_var.get() or not amount_var.get() or not payment_mode_var.get():
-        mb.Messagebox.ok(title='Fields empty!', message="Please fill all the missing fields before pressing the add button!", parent=popup)
-
-    else:
-
-        with sqlite3.connect("ExpenseMate.db") as db:
-            cursor = db.cursor()
-
-            cursor.execute("SELECT UserID FROM UserTable WHERE username = ?", (info.username,))
-            userID = cursor.fetchone()[0]
-
-            cursor.execute(
-                'INSERT INTO ExpenseTracker (Date, Payee, Description, Amount, ModeOfPayment, userID) VALUES (?, ?, ?, ?, ?, ?)',
-                # SQL code for inserting values
-                (date_var.get(), payee_var.get(), description_var.get(), amount_var.get(), payment_mode_var.get(), userID)
-                # Parameters to insert into the values in the SQL code
-            )
-            db.commit()
-
-        popup.destroy()
-        #Dashboard.UpdateTable(table, Visuals)
-        UpdateDashboardInfo(info)
-
-
-
-def EditExpense(date_var, payee_var, description_var, amount_var, payment_mode_var, table, popup, Visuals, id, info):
-
-    if not date_var.get() or not payee_var.get() or not description_var.get() or not amount_var.get() or not payment_mode_var.get():
-        #mb.Messagebox.ok(title='Fields empty!', message="Please fill all the missing fields before pressing the add button!", parent=popup)
-        popup.destroy()
-
-    else:
-
-        with sqlite3.connect("ExpenseMate.db") as db:
-            cursor = db.cursor()
-            cursor.execute('UPDATE ExpenseTracker SET Date = ?, Payee = ?, Description = ?, Amount = ?, ModeOfPayment = ? WHERE ID = ?',
-                   (date_var.get(), payee_var.get(), description_var.get(), amount_var.get(), payment_mode_var.get(), id))
-            db.commit()
-
-        popup.destroy()
-        #mb.Messagebox.ok(title='Data edited', message='We have updated the data and stored in the database as you wanted', parent=popup)
-        UpdateDashboardInfo(info)
-
-
-def DeleteExpense(values_selected, info):
     with sqlite3.connect("ExpenseMate.db") as db:
         cursor = db.cursor()
-        cursor.execute('DELETE FROM ExpenseTracker WHERE ID=%d' % values_selected[
+
+        cursor.execute("SELECT UserID FROM UserTable WHERE username = ?", (Dashboard.username,))
+        userID = cursor.fetchone()[0]
+
+        cursor.execute(
+            'INSERT INTO ExpenseTracker (Date, Payee, Description, Amount, ModeOfPayment, userID) VALUES (?, ?, ?, ?, ?, ?)',
+            tuple(Values[i].get() for i in range(5)) + (userID,))
+
+        db.commit()
+
+        UpdateDashboardInfo(Dashboard)
+
+
+
+def EditExpense(Values, Dashboard):
+
+    with sqlite3.connect("ExpenseMate.db") as db:
+        cursor = db.cursor()
+        cursor.execute('UPDATE ExpenseTracker SET Date = ?, Payee = ?, Description = ?, Amount = ?, ModeOfPayment = ? WHERE ID = ?',
+               tuple(Values[i].get() for i in range(1,6)) + (Values[0].get(),))
+        db.commit()
+
+    UpdateDashboardInfo(Dashboard)
+
+
+def DeleteExpense(values, Dashboard):
+    with sqlite3.connect("ExpenseMate.db") as db:
+        cursor = db.cursor()
+        cursor.execute('DELETE FROM ExpenseTracker WHERE ID=%d' % values[
         0])  # SQL code to remove data from ExpenseTracker Table
         db.commit()
-        UpdateDashboardInfo(info)
+        UpdateDashboardInfo(Dashboard)
 
-def AddBudget(popup, budget, username, info):
+def AddBudget(values, Dashboard):
 
-    if not budget.get():
-        mb.Messagebox.ok(title='Fields empty!', message="Please fill all the missing fields before pressing the add button!", parent=popup)
-
-    else:
-        budget=budget.get()
-
-        with sqlite3.connect("ExpenseMate.db") as db:
-            user_cursor = db.cursor()
-            user_cursor.execute("SELECT userID FROM UserTable WHERE username = ?", (username,))
-            userID = user_cursor.fetchone()
-            userID = userID[0]
-
-        with sqlite3.connect("ExpenseMate.db") as db:
-            cursor = db.cursor()
-            cursor.execute("INSERT INTO Budget (Budget, Balance, User_ID) VALUES (?, ?, ?)", (budget, 0.0, userID))
-            db.commit()
-
-        popup.destroy()
-        UpdateDashboardInfo(info)
-        #mb.Messagebox.ok(title='Data edited', message='Data successfully updated!', parent=popup)
-
-def CollectTotalBudget(username):
-    with sqlite3.connect("ExpenseMate.db") as db:
-        user_cursor = db.cursor()
-        user_cursor.execute("SELECT Budget FROM Budget WHERE username = ?", (username,))
-        result = user_cursor.fetchone()
-        result = result[0]
-        """.config(text=f'{result:.2f}')"""
-
-
-def AddBalance(popup, balance, username, info):
-    if not balance.get():
-        mb.Messagebox.ok(title='Fields empty!',
-                         message="Please fill all the missing fields before pressing the add button!",
-                         parent=popup)
-
-    else:
-        balance = balance.get()
-
-        with sqlite3.connect("ExpenseMate.db") as user_db:
-            user_cursor = user_db.cursor()
-            user_cursor.execute("SELECT userID FROM UserTable WHERE username = ?", (username,))
-            userID = user_cursor.fetchone()
-            userID = userID[0]
-
-        with sqlite3.connect("ExpenseMate.db") as budget_db:
-            cursor = budget_db.cursor()
-            cursor.execute("INSERT INTO Budget (Budget, Balance, User_ID) VALUES (?, ?, ?)", (0.0, balance, userID))
-            budget_db.commit()
-
-        popup.destroy()
-        UpdateDashboardInfo(info)
-        #mb.Messagebox.ok(title='Data edited', message='Data successfully updated!', parent=popup)
-
-def UpdateDashboardInfo(Info):
     with sqlite3.connect("ExpenseMate.db") as db:
         cursor = db.cursor()
-        username = Info.username
+        cursor.execute("SELECT userID FROM UserTable WHERE username = ?", (values[1].get(), ))
+        userID = cursor.fetchone()[0]
+        cursor.execute("INSERT INTO Budget (Budget, User_ID) VALUES (?, ?)", (values[0].get(), userID))
+        db.commit()
+
+    UpdateDashboardInfo(Dashboard)
+
+def AddBalance(values, Dashboard):
+
+    with sqlite3.connect("ExpenseMate.db") as db:
+        cursor = db.cursor()
+        cursor.execute("SELECT userID FROM UserTable WHERE username = ?", (values[1].get(),))
+        userID = cursor.fetchone()[0]
+        cursor.execute("INSERT INTO Budget (Balance, User_ID) VALUES (?, ?)", (values[0].get(), userID))
+        db.commit()
+
+    UpdateDashboardInfo(Dashboard)
+
+def Reset(username):
+    with sqlite3.connect("ExpenseMate.db") as db:
+        cursor = db.cursor()
+        cursor.execute("SELECT userID FROM UserTable WHERE username = ?", (username, ))
+        userID = cursor.fetchone()[0]
+        cursor.execute("DELETE FROM Budget WHERE user_ID = ?", (userID,))
+
+def UpdateDashboardInfo(Dashboard):
+    with sqlite3.connect("ExpenseMate.db") as db:
+        cursor = db.cursor()
+        username = Dashboard.username
 
         cursor.execute("SELECT UserID FROM UserTable WHERE username = ?", (username,))
         userID = cursor.fetchone()
 
         cursor.execute("SELECT SUM(Budget) FROM Budget WHERE User_ID = ?", userID)
-        Info.TotalBudget.set(cursor.fetchone()[0])
+        Dashboard.TotalBudget.set(cursor.fetchone()[0])
         try:
-            Info.TotalBudget.get()
+            Dashboard.TotalBudget.get()
         except:
-            Info.TotalBudget.set(0)
+            Dashboard.TotalBudget.set(0)
 
         cursor.execute("SELECT SUM(Balance) FROM Budget WHERE User_ID = ?", userID)
-        Info.TotalBalance.set(cursor.fetchone()[0])
+        Dashboard.TotalBalance.set(cursor.fetchone()[0])
         try:
-            Info.TotalBalance.get()
+            Dashboard.TotalBalance.get()
         except:
-            Info.TotalBalance.set(0)
+            Dashboard.TotalBalance.set(0)
 
         cursor.execute("SELECT SUM(Amount) FROM ExpenseTracker WHERE userID = ?", userID)
-        Info.TotalExpense.set(cursor.fetchone()[0])
+        Dashboard.TotalExpense.set(cursor.fetchone()[0])
         try:
-            Info.TotalExpense.get()
+            Dashboard.TotalExpense.get()
         except:
-            Info.TotalExpense.set(0)
+            Dashboard.TotalExpense.set(0)
 
-        Info.BalanceLeft.set(Info.TotalBalance.get() - Info.TotalExpense.get())
+        Dashboard.BalanceLeft.set(Dashboard.TotalBalance.get() - Dashboard.TotalExpense.get())

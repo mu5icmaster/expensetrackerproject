@@ -95,14 +95,14 @@ class Dashboard():
 
         # Edit Expense Button
         ttk.Button(self.FrameNE, style="primary-outline", text="Edit Expense",
-                   command=lambda: EditExpense(self.TopLevel, table, self.Visuals, self)).grid(row=2, column=3)
+                   command=lambda: EditExpense(table, self)).grid(row=2, column=3)
 
         # Delete Expense Button
         ttk.Button(self.FrameNE, style="primary-outline", text="Delete Expense",
-                   command=lambda: DeleteExpense(table, self.Visuals, self.TopLevel, self)).grid(row=2, column=4)
+                   command=lambda: DeleteExpense(table, self)).grid(row=2, column=4)
 
         # Add Expense Button
-        ttk.Button(self.FrameNE, style="primary-outline", text="Add Expense", command=lambda: AddExpense(self.TopLevel, table, self.Visuals, self)).grid(row=2, column=5)
+        ttk.Button(self.FrameNE, style="primary-outline", text="Add Expense", command=lambda: AddExpense(self, table)).grid(row=2, column=5)
 
         self.FrameNE.rowconfigure(1, weight=1)
         self.FrameNE.rowconfigure(2, weight=1)
@@ -178,15 +178,19 @@ class Dashboard():
 
         # Expenses
         ttk.Label(self.FrameNE, text="Budget", font=self.Visuals.BoldText, anchor="center",
-                  background=self.Visuals.Theme.colors.get("light")).grid(row=1, column=3, columnspan=2, sticky="swe")
+                  background=self.Visuals.Theme.colors.get("light")).grid(row=1, column=3, columnspan=3, sticky="swe")
 
         # Add Balance Button
         ttk.Button(self.FrameNE, style="primary-outline", text="Add Balance",
-                   command=lambda: AddBalance(self.TopLevel, table, self.username, self)).grid(row=2, column=3)
+                   command=lambda: AddBalance(self)).grid(row=2, column=3)
 
         # Add Budget Button
         ttk.Button(self.FrameNE, style="primary-outline", text="Add Budget",
-                   command=lambda: AddBudget(self.TopLevel, table, self.username, self)).grid(row=2, column=4)
+                   command=lambda: AddBudget(self)).grid(row=2, column=4)
+
+        # Reset Button
+        ttk.Button(self.FrameNE, style="primary-outline", text="Reset",
+                   command=lambda: Reset(self)).grid(row=2, column=5)
 
         # Frame 1 (top left frame)
 
@@ -264,19 +268,9 @@ class Dashboard():
         self.FrameNE.columnconfigure(1, weight=1)
         self.FrameNE.columnconfigure(2, weight=4)
         self.FrameNE.columnconfigure(3, weight=1)
-        self.FrameNE.columnconfigure(4, weight=1)
-        self.FrameNE.columnconfigure(5, weight=0)
-
-
-        table = Tableview(
-            master=self.FrameSE,
-            autofit=True,
-            autoalign=True,
-            stripecolor=(self.Visuals.Theme.colors.get("light"), None),
-            bootstyle="info"
-        )
-
-        #table.grid(row=1, column=1, sticky="nwes") Jet How ditched my table :(
+        self.FrameNE.columnconfigure(4, weight=0)
+        self.FrameNE.columnconfigure(5, weight=1)
+        self.FrameNE.columnconfigure(6, weight=0)
 
         self.FrameSE.rowconfigure(1, weight=1)
         self.FrameSE.rowconfigure(2, weight=1)
@@ -318,51 +312,65 @@ def UpdateTable(table):
     table.load_table_data()
 
 
-def AddExpense(master, table, Visuals, info):
+def AddExpense(Dashboard, table):
     # Create a Toplevel window for the pop-up
-    popup = ttk.Toplevel(master)
+    popup = ttk.Toplevel(Dashboard.TopLevel)
     popup.title("Add Expense")
 
     # Make the pop-up window transient for the main window
-    popup.transient(master)
+    popup.transient(Dashboard.TopLevel)
 
     # Make the pop-up window grab the focus
     popup.grab_set()
 
     # StringVars for user inputs
-    date_var = tkinter.StringVar()
-    payee_var = tkinter.StringVar()
-    description_var = tkinter.StringVar()
-    amount_var = tkinter.StringVar()
-    payment_mode_var = tkinter.StringVar()
+    Values = [tkinter.StringVar() for i in range(5)]
 
     # Labels and Entries
     ttk.Label(popup, text="Date:").grid(row=0, column=0, padx=10, pady=5)
     date_entry = ttk.DateEntry(popup, firstweekday=0)
-    date_entry.entry.configure(textvariable = date_var)
+    date_entry.entry.configure(textvariable = Values[0])
     date_entry.grid(row=0, column=1, padx=10, pady=5)
 
     ttk.Label(popup, text="Payee:").grid(row=1, column=0, padx=10, pady=5)
-    payee_entry = ttk.Entry(popup, textvariable=payee_var)
+    payee_entry = ttk.Entry(popup, textvariable=Values[1])
     payee_entry.grid(row=1, column=1, padx=10, pady=5)
 
     ttk.Label(popup, text="Description:").grid(row=2, column=0, padx=10, pady=5)
-    description_entry = ttk.Entry(popup, textvariable=description_var)
+    description_entry = ttk.Entry(popup, textvariable=Values[2])
     description_entry.grid(row=2, column=1, padx=10, pady=5)
 
     ttk.Label(popup, text="Amount:").grid(row=3, column=0, padx=10, pady=5)
-    amount_entry = ttk.Entry(popup, textvariable=amount_var)
+    amount_entry = ttk.Entry(popup, textvariable=Values[3])
     amount_entry.grid(row=3, column=1, padx=10, pady=5)
 
     ttk.Label(popup, text="Mode of Payment:").grid(row=4, column=0, padx=10, pady=5)
-    payment_mode_entry = ttk.Combobox(popup, textvariable=payment_mode_var, values=["Cash", "Credit Card", "Debit Card", "TNG E-Wallet"])
-    payment_mode_entry.set("Select an item")
+    payment_mode_entry = ttk.Combobox(popup, textvariable=Values[4], values=["Cash", "Credit Card", "Debit Card", "TNG E-Wallet"])
+    Values[4].set("Select an item")
     payment_mode_entry.grid(row=4, column=1, padx=10, pady=5)
 
-    payment_mode_entry.bind("<FocusOut>", lambda event, x=payment_mode_var:validate_input(event, x))
+    payment_mode_entry.bind("<FocusOut>", lambda event, x=Values[4]:validate_input(event, x))
+
+    def Submit(Values, popup, Dashboard):
+
+        for _, values in enumerate(Values):
+            if not values.get() or values.get() == "Select an item":
+                dialogs.Messagebox.ok(title='Fields empty!', message="Please fill all the missing fields!", parent=popup)
+                return
+
+        try:
+            Database.AddExpense(Values, Dashboard)
+            dialogs.Messagebox.ok(title="Success!", message="Your expense has been recorded!", parent=popup)
+            popup.destroy()
+            UpdateTable(table)
+
+        except:
+            dialogs.Messagebox.ok(title="Error!", message="An unknown error has occurred.", parent=popup)
+            popup.destroy()
+            pass
 
     # Button to submit the form
-    submit_button = ttk.Button(popup, text="Submit", command=lambda: Database.AddExpense(date_var, payee_var, description_var, amount_var, payment_mode_var, table, popup, Visuals, info))
+    submit_button = ttk.Button(popup, text="Submit", command=lambda: Submit(Values, popup, Dashboard))
     submit_button.grid(row=5, column=1, pady=10)
 
     # Resizes
@@ -376,62 +384,78 @@ def AddExpense(master, table, Visuals, info):
     popup.rowconfigure(5, weight=1)
 
     # Wait for the pop-up window to be destroyed before allowing the main window to regain focus
-    master.wait_window(popup)
+    Dashboard.TopLevel.wait_window(popup)
 
-    UpdateTable(table)
 
-def EditExpense(master, table, Visuals, info):
+
+def EditExpense(table, Dashboard):
 
     try:
         row = table.get_row(iid=table.view.selection()[0])
     except:
-        dialogs.Messagebox.ok(title="Error", message="Please select an expense to edit.", parent=master)
+        dialogs.Messagebox.ok(title="Error", message="Please select an expense to edit.", parent=Dashboard.TopLevel)
         return
 
     # Create a Toplevel window for the pop-up
-    popup = ttk.Toplevel(master)
+    popup = ttk.Toplevel(Dashboard.TopLevel)
     popup.title("Edit Expense")
 
     # Make the pop-up window transient for the main window
-    popup.transient(master)
+    popup.transient(Dashboard.TopLevel)
 
     # Make the pop-up window grab the focus
     popup.grab_set()
 
     # StringVars for user inputs
-    id = row.values[0]
-    date_var = tkinter.StringVar(value=row.values[1])
-    payee_var = tkinter.StringVar(value=row.values[2])
-    description_var = tkinter.StringVar(value=row.values[3])
-    amount_var = tkinter.StringVar(value=row.values[4])
-    payment_mode_var = tkinter.StringVar(value=row.values[5])
+    Values = [tkinter.StringVar() for i in range(7)]
+
+    for index, values in enumerate(row.values):
+        Values[index].set(values)
 
     # Labels and Entries
     ttk.Label(popup, text="Date:").grid(row=0, column=0, padx=10, pady=5)
     date_entry = ttk.DateEntry(popup, firstweekday=0)
-    date_entry.entry.configure(textvariable = date_var)
+    date_entry.entry.configure(textvariable = Values[1])
     date_entry.grid(row=0, column=1, padx=10, pady=5)
 
     ttk.Label(popup, text="Payee:").grid(row=1, column=0, padx=10, pady=5)
-    payee_entry = ttk.Entry(popup, textvariable=payee_var)
+    payee_entry = ttk.Entry(popup, textvariable= Values[2])
     payee_entry.grid(row=1, column=1, padx=10, pady=5)
 
     ttk.Label(popup, text="Description:").grid(row=2, column=0, padx=10, pady=5)
-    description_entry = ttk.Entry(popup, textvariable=description_var)
+    description_entry = ttk.Entry(popup, textvariable= Values[3])
     description_entry.grid(row=2, column=1, padx=10, pady=5)
 
     ttk.Label(popup, text="Amount:").grid(row=3, column=0, padx=10, pady=5)
-    amount_entry = ttk.Entry(popup, textvariable=amount_var)
+    amount_entry = ttk.Entry(popup, textvariable= Values[4])
     amount_entry.grid(row=3, column=1, padx=10, pady=5)
 
     ttk.Label(popup, text="Mode of Payment:").grid(row=4, column=0, padx=10, pady=5)
-    payment_mode_entry = ttk.Combobox(popup, textvariable=payment_mode_var, values=["Cash", "Credit Card", "Debit Card", "TNG E-Wallet"])
+    payment_mode_entry = ttk.Combobox(popup, textvariable= Values[5], values=["Cash", "Credit Card", "Debit Card", "TNG E-Wallet"])
     payment_mode_entry.grid(row=4, column=1, padx=10, pady=5)
 
-    payment_mode_entry.bind("<FocusOut>", lambda event, x=payment_mode_var:validate_input(event, x))
+    payment_mode_entry.bind("<FocusOut>", lambda event, x=Values[5]: validate_input(event, x))
+
+    def Submit(Values, popup, Dashboard):
+
+        for _, values in enumerate(Values):
+            if not values.get() or values.get() == "Select an item":
+                dialogs.Messagebox.ok(title='Fields empty!', message="Please fill all the missing fields!", parent=popup)
+                return
+
+        try:
+            Database.EditExpense(Values, Dashboard)
+            dialogs.Messagebox.ok(title="Success!", message="Your expense has been edited!", parent=popup)
+            popup.destroy()
+            UpdateTable(table)
+
+        except:
+            dialogs.Messagebox.ok(title="Error!", message="An unknown error has occurred.", parent=popup)
+            popup.destroy()
+            pass
 
     # Button to submit the form
-    submit_button = ttk.Button(popup, text="Submit", command=lambda: Database.EditExpense(date_var, payee_var, description_var, amount_var, payment_mode_var, table, popup, Visuals, id, info))
+    submit_button = ttk.Button(popup, text="Submit", command=lambda: Submit(Values, popup, Dashboard))
     submit_button.grid(row=5, column=1, pady=10)
 
     # Resizes
@@ -445,48 +469,65 @@ def EditExpense(master, table, Visuals, info):
     popup.rowconfigure(5, weight=1)
 
     # Wait for the pop-up window to be destroyed before allowing the main window to regain focus
-    master.wait_window(popup)
+    Dashboard.TopLevel.wait_window(popup)
 
-    UpdateTable(table)
 
-def DeleteExpense(table, Visuals, parent, info):
+def DeleteExpense(table, Dashboard):
 
     try:
         row = table.get_row(iid=table.view.selection()[0])
     except:
-        dialogs.Messagebox.ok(title="Error", message="Please select an expense to delete.", parent=parent)
+        dialogs.Messagebox.ok(title="Error", message="Please select an expense to delete.", parent=Dashboard.TopLevel)
         return
 
-    surety = dialogs.Messagebox.yesno(title="Delete expense?", message="Action cannot be undone.", parent=parent)
+    surety = dialogs.Messagebox.yesno(title="Delete expense?", message="Action cannot be undone.", parent=Dashboard.TopLevel)
 
     if surety == "Yes":
-        Database.DeleteExpense(row.values, info)
-        dialogs.Messagebox.ok(title='Record deleted!',
-                              message='The record you wanted to delete has been deleted successfully', parent=parent)
-    UpdateTable(table)
+        Database.DeleteExpense(row.values, Dashboard)
+        dialogs.Messagebox.ok(title='Success!', message='Your expense has been deleted!', parent=Dashboard.TopLevel)
+        UpdateTable(table)
 
 
-def AddBudget(master, table, username, info):
+def AddBudget(Dashboard):
     # Create a Toplevel window for the pop-up
-    popup = ttk.Toplevel(master)
+    popup = ttk.Toplevel(Dashboard.TopLevel)
     popup.title("Add Budget")
 
     # Make the pop-up window transient for the main window
-    popup.transient(master)
+    popup.transient(Dashboard.TopLevel)
 
     # Make the pop-up window grab the focus
     popup.grab_set()
 
     # StringVars for user inputs
-    budget_var = tkinter.StringVar()
+    values = [tkinter.StringVar() for i in range(2)]
+    values[1].set(Dashboard.username)
 
     # Label and Entry
     ttk.Label(popup, text="Budget:").grid(row=1, column=0, padx=10, pady=5)
-    payee_entry = ttk.Entry(popup, textvariable=budget_var)
+    payee_entry = ttk.Entry(popup, textvariable=values[0])
     payee_entry.grid(row=1, column=1, padx=10, pady=5)
 
+    def Submit(Values, popup, Dashboard):
+
+        for _, values in enumerate(Values):
+            if not values.get():
+                dialogs.Messagebox.ok(title='Fields empty!', message="Please fill all the missing fields!", parent=popup)
+                return
+
+        try:
+            Database.AddBudget(Values, Dashboard)
+            dialogs.Messagebox.ok(title="Success!", message="Your budget has been added!", parent=popup)
+            popup.destroy()
+
+        except:
+            dialogs.Messagebox.ok(title="Error!", message="An unknown error has occurred.", parent=popup)
+            popup.destroy()
+            pass
+
+
     # Button to submit the form
-    submit_button = ttk.Button(popup, text="Submit",command=lambda: Database.AddBudget(popup, budget_var, username, info), bootstyle="info")
+    submit_button = ttk.Button(popup, text="Submit",command=lambda: Submit(values, popup, Dashboard), bootstyle="info")
     submit_button.grid(row=2, column=0, pady=10, columnspan=2)
 
     # Resizes
@@ -496,29 +537,47 @@ def AddBudget(master, table, username, info):
     popup.rowconfigure(2, weight=1)
 
     # Wait for the pop-up window to be destroyed before allowing the main window to regain focus
-    master.wait_window(popup)
+    Dashboard.TopLevel.wait_window(popup)
 
-def AddBalance(master, table, username, info):
+def AddBalance(Dashboard):
     # Create a Toplevel window for the pop-up
-    popup = ttk.Toplevel(master)
+    popup = ttk.Toplevel(Dashboard.TopLevel)
     popup.title("Add Balance")
 
     # Make the pop-up window transient for the main window
-    popup.transient(master)
+    popup.transient(Dashboard.TopLevel)
 
     # Make the pop-up window grab the focus
     popup.grab_set()
 
     # StringVars for user inputs
-    balance_var = tkinter.StringVar()
+    values = [tkinter.StringVar() for i in range(2)]
+    values[1].set(Dashboard.username)
 
     # Label and Entry
     ttk.Label(popup, text="Balance:").grid(row=1, column=0, padx=10, pady=5)
-    payee_entry = ttk.Entry(popup, textvariable=balance_var)
+    payee_entry = ttk.Entry(popup, textvariable=values[0])
     payee_entry.grid(row=1, column=1, padx=10, pady=5)
 
+    def Submit(Values, popup, Dashboard):
+
+        for _, values in enumerate(Values):
+            if not values.get():
+                dialogs.Messagebox.ok(title='Fields empty!', message="Please fill all the missing fields!", parent=popup)
+                return
+
+        try:
+            Database.AddBudget(Values, Dashboard)
+            dialogs.Messagebox.ok(title="Success!", message="Your balance has been added!", parent=popup)
+            popup.destroy()
+
+        except:
+            dialogs.Messagebox.ok(title="Error!", message="An unknown error has occurred.", parent=popup)
+            popup.destroy()
+            pass
+
     # Button to submit the form
-    submit_button = ttk.Button(popup, text="Submit",command=lambda: Database.AddBalance(popup, balance_var, username, info), bootstyle="info")
+    submit_button = ttk.Button(popup, text="Submit",command=lambda:Submit(values, popup, Dashboard), bootstyle="info")
     submit_button.grid(row=2, column=0, pady=10, columnspan=2)
 
     # Resizes
@@ -528,7 +587,14 @@ def AddBalance(master, table, username, info):
     popup.rowconfigure(2, weight=1)
 
     # Wait for the pop-up window to be destroyed before allowing the main window to regain focus
-    master.wait_window(popup)
+    Dashboard.TopLevel.wait_window(popup)
+
+def Reset(Dashboard):
+    surety = dialogs.Messagebox.yesno(title="Delete Budget?", message="Action cannot be undone.", parent=Dashboard.TopLevel)
+
+    if surety == "Yes":
+        Database.Reset(Dashboard)
+        dialogs.Messagebox.ok(title='Success!', message='Your expense has been deleted!', parent=Dashboard.TopLevel)
 
 def validate_input(event, textvar):
     selected_item = textvar.get()
@@ -546,7 +612,7 @@ if __name__ == "__main__":
     root.withdraw()
 
     MainPage = Dashboard(root, Theme.Visuals(style="flatly"))
-    MainPage.Create_Expense()
-    #MainPage.Create_Budget()
+    #MainPage.Create_Expense()
+    MainPage.Create_Budget()
 
     root.mainloop()
