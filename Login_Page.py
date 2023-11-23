@@ -132,7 +132,6 @@ def Sign_Up(root, window, Credentials, Visuals, Button):
 
 def Log_In(root, window, Credentials, Visuals):
     if Database.LoginUser(Credentials) is True:
-        print("success")
         noti = dialogs.Messagebox.ok("Successfully logged in!", "Success", parent=window)
         #window.wait_window(noti)
 

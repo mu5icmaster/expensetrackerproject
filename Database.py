@@ -211,11 +211,23 @@ def UpdateDashboardInfo(Info):
 
         cursor.execute("SELECT SUM(Budget) FROM Budget WHERE User_ID = ?", userID)
         Info.TotalBudget.set(cursor.fetchone()[0])
+        try:
+            Info.TotalBudget.get()
+        except:
+            Info.TotalBudget.set(0)
 
         cursor.execute("SELECT SUM(Balance) FROM Budget WHERE User_ID = ?", userID)
         Info.TotalBalance.set(cursor.fetchone()[0])
+        try:
+            Info.TotalBalance.get()
+        except:
+            Info.TotalBalance.set(0)
 
         cursor.execute("SELECT SUM(Amount) FROM ExpenseTracker WHERE userID = ?", userID)
         Info.TotalExpense.set(cursor.fetchone()[0])
+        try:
+            Info.TotalExpense.get()
+        except:
+            Info.TotalExpense.set(0)
 
         Info.BalanceLeft.set(Info.TotalBalance.get() - Info.TotalExpense.get())
