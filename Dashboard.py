@@ -170,13 +170,12 @@ class Dashboard():
         table.grid(row=1, column=1, sticky="nwes", rowspan=2)
         Scrollbar.grid(row=1, column=2, sticky="nes", rowspan=2)
 
-        UpdateTable(table)
+        UpdateTable(table, self)
 
         self.FrameSE.rowconfigure(1, weight=1)
         self.FrameSE.columnconfigure(1, weight=1)
         self.FrameSE.columnconfigure(2, weight=0)
 
-        #UpdateTable(table, self.Visuals)
 
     def Create_Budget(self):
 
@@ -311,15 +310,19 @@ class Dashboard():
         for widget in frame.winfo_children():
             widget.destroy()
 
-def UpdateTable(table):
+def UpdateTable(table, Dashboard):
 
     # Resets Table Rows
     table.delete_rows()
 
     # Fetches Data from Database
     with sqlite3.connect("ExpenseMate.db") as db:
-        all_data = db.execute('SELECT * FROM ExpenseTracker')
-    data = all_data.fetchall()
+        cursor = db.cursor()
+        print(Dashboard.username)
+        cursor.execute('SELECT userID FROM UserTable WHERE username = ?', (Dashboard.username,))
+        userID = cursor.fetchone()[0]
+        all_data = db.execute('SELECT * FROM ExpenseTracker WHERE userID = ?', (userID,))
+        data = all_data.fetchall()
 
     # Inserts Data into Table
     for values in data:
@@ -379,7 +382,7 @@ def AddExpense(Dashboard, table):
             Database.AddExpense(Values, Dashboard)
             dialogs.Messagebox.ok(title="Success!", message="Your expense has been recorded!", parent=popup)
             popup.destroy()
-            UpdateTable(table)
+            UpdateTable(table, Dashboard)
 
         except:
             dialogs.Messagebox.ok(title="Error!", message="An unknown error has occurred.", parent=popup)
@@ -464,7 +467,7 @@ def EditExpense(table, Dashboard):
             Database.EditExpense(Values, Dashboard)
             dialogs.Messagebox.ok(title="Success!", message="Your expense has been edited!", parent=popup)
             popup.destroy()
-            UpdateTable(table)
+            UpdateTable(table, Dashboard)
 
         except:
             dialogs.Messagebox.ok(title="Error!", message="An unknown error has occurred.", parent=popup)
@@ -502,7 +505,7 @@ def DeleteExpense(table, Dashboard):
     if surety == "Yes":
         Database.DeleteExpense(row.values, Dashboard)
         dialogs.Messagebox.ok(title='Success!', message='Your expense has been deleted!', parent=Dashboard.TopLevel)
-        UpdateTable(table)
+        UpdateTable(table, Dashboard)
 
 
 def AddBudget(Dashboard):
@@ -629,7 +632,7 @@ if __name__ == "__main__":
     root.withdraw()
 
     MainPage = Dashboard(root, Theme.Visuals(style="flatly"))
-    #MainPage.Create_Expense()
-    MainPage.Create_Budget()
+    MainPage.Create_Expense()
+    #MainPage.Create_Budget()
 
     root.mainloop()
