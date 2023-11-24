@@ -36,8 +36,7 @@ with sqlite3.connect("ExpenseMate.db") as db:
 
     Expenses.execute(
       'CREATE TABLE IF NOT EXISTS ExpenseTracker '
-      '(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, '
-      'Date DATETIME, Payee TEXT, Description TEXT, Amount FLOAT, ModeOfPayment TEXT, userID INTEGER,'
+      '(ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, Date DATETIME, Payee TEXT, Description TEXT, Amount FLOAT, ModeOfPayment TEXT, userID INTEGER, Category TEXT,'
       'FOREIGN KEY (userID) REFERENCES UserTable(userID))')
 
     db.commit()
@@ -54,6 +53,7 @@ with sqlite3.connect("ExpenseMate.db") as db:
         """)
 
     db.commit()
+
 
 
 def RegisterUser(Credentials):
@@ -116,9 +116,14 @@ def AddExpense(Values, Dashboard):
         cursor.execute("SELECT UserID FROM UserTable WHERE username = ?", (Dashboard.username,))
         userID = cursor.fetchone()[0]
 
+        for index, values in enumerate(Values):
+            print(str(index) + ": " + str(values.get()))
+
+        print(tuple(Values[i].get() for i in range(5)) + tuple(str(userID)) + (Values[5].get(),))
+
         cursor.execute(
-            'INSERT INTO ExpenseTracker (Date, Payee, Description, Amount, ModeOfPayment, userID) VALUES (?, ?, ?, ?, ?, ?)',
-            tuple(Values[i].get() for i in range(5)) + (userID,))
+            'INSERT INTO ExpenseTracker (Date, Payee, Description, Amount, ModeOfPayment, userID, Category ) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            tuple(Values[i].get() for i in range(5)) + tuple(str(userID)) + (Values[5].get(),))
 
         db.commit()
 
@@ -127,11 +132,11 @@ def AddExpense(Values, Dashboard):
 
 
 def EditExpense(Values, Dashboard):
-
+    print(tuple(Values[i].get() for i in range(1,7))+(Values[0].get(),))
     with sqlite3.connect("ExpenseMate.db") as db:
         cursor = db.cursor()
-        cursor.execute('UPDATE ExpenseTracker SET Date = ?, Payee = ?, Description = ?, Amount = ?, ModeOfPayment = ? WHERE ID = ?',
-               tuple(Values[i].get() for i in range(1,6)) + (Values[0].get(),))
+        cursor.execute('UPDATE ExpenseTracker SET Date = ?, Payee = ?, Description = ?, Amount = ?, ModeOfPayment = ?, Category = ? WHERE ID = ?',
+               tuple(Values[i].get() for i in range(1,7))+(Values[0].get(),))
         db.commit()
 
     UpdateDashboardInfo(Dashboard)
