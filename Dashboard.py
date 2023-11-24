@@ -613,7 +613,7 @@ def Reset(Dashboard):
 
     if surety == "Yes":
         Database.Reset(Dashboard)
-        dialogs.Messagebox.ok(title='Success!', message='Your expense has been deleted!', parent=Dashboard.TopLevel)
+        dialogs.Messagebox.ok(title='Success!', message='Your budget has been reset!', parent=Dashboard.TopLevel)
 
 def validate_input(event, textvar):
     selected_item = textvar.get()
