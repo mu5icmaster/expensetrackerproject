@@ -1,8 +1,21 @@
 import sqlite3
 import re
+import hashlib
 #from tkinter import messagebox as mb
 import ttkbootstrap.dialogs.dialogs as mb
 import Dashboard
+
+def hash_password(password):
+    # Create a new SHA-256 hash object
+    sha256_hash = hashlib.sha256()
+
+    # Update the hash object with the password encoded as bytes
+    sha256_hash.update(password.encode('utf-8'))
+
+    # Get the hexadecimal digest (encrypted password)
+    encrypted_password = sha256_hash.hexdigest()
+
+    return encrypted_password
 
 # Initialise User Table
 with sqlite3.connect("ExpenseMate.db") as db:
@@ -45,6 +58,8 @@ with sqlite3.connect("ExpenseMate.db") as db:
 
 def RegisterUser(Credentials):
 
+    password = hash_password(Credentials.password.get())
+
     with sqlite3.connect("ExpenseMate.db") as db:
         cursor = db.cursor()
 
@@ -56,22 +71,24 @@ def RegisterUser(Credentials):
         return False
 
     insert = "INSERT INTO UserTable(username, password, email_address) VALUES(?,?,?)"
-    cursor.execute(insert, [(Credentials.username.get()), (Credentials.password.get()), (Credentials.email.get())])
+    cursor.execute(insert, [(Credentials.username.get()), (password), (Credentials.email.get())])
     db.commit()
     return True
 
 def LoginUser(Credentials):
+
+    password = hash_password(Credentials.password.get())
 
     with sqlite3.connect("ExpenseMate.db") as db:
         cursor = db.cursor()
 
     if re.match("^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$", Credentials.username.get()):
         statement = "SELECT username from UserTable WHERE email_address= ? AND password = ?"
-        cursor.execute(statement, (Credentials.username.get(), Credentials.password.get()))
+        cursor.execute(statement, (Credentials.username.get(), password))
 
     else:
         statement = "SELECT username from UserTable WHERE username= ? AND password = ?"
-        cursor.execute(statement, (Credentials.username.get(), Credentials.password.get()))
+        cursor.execute(statement, (Credentials.username.get(), password))
 
     if not cursor.fetchone():  # An empty result evaluates to False.
         return False
@@ -80,12 +97,12 @@ def LoginUser(Credentials):
         if re.match("^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$", Credentials.username.get()):
             Credentials.email.set(Credentials.username.get())
             statement = "SELECT username from UserTable WHERE email_address= ? AND password = ?"
-            cursor.execute(statement, (Credentials.username.get(), Credentials.password.get()))
+            cursor.execute(statement, (Credentials.username.get(), password))
             Credentials.username.set("%s" % cursor.fetchone())
 
         else:
             statement = "SELECT email_address from UserTable WHERE username= ? AND password = ?"
-            cursor.execute(statement, (Credentials.username.get(), Credentials.password.get()))
+            cursor.execute(statement, (Credentials.username.get(), password))
             Credentials.email.set("%s" % cursor.fetchone())
 
         return True
