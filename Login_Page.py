@@ -143,7 +143,7 @@ def Log_In(root, window, Credentials, Visuals):
         window.destroy()
 
     else:
-        dialogs.Messagebox.ok(title=":(", message="Invalid Login Credentials")
+        dialogs.Messagebox.ok(title=":(", message="Invalid Login Credentials", parent=window)
 
 # Deletes the preview text when user focuses an Entry Widget
 def Delete_Text(event, Visuals):
