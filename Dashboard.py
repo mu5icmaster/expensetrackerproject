@@ -82,10 +82,8 @@ class Dashboard():
     def check_notification(self, *args):
         try:
             if self.BalanceLeft.get() >= 0:
-                print("update")
                 self.Counter = 1
             elif self.BalanceLeft.get() < 0 and self.Counter == 1:
-                print("update2")
                 self.Counter = 0
                 dialogs.Messagebox.ok(title="Warning", message="You have exceeded your total balance.",
                                       parent=self.TopLevel)
@@ -613,7 +611,7 @@ def Reset(Dashboard):
 
     if surety == "Yes":
         Database.Reset(Dashboard)
-        dialogs.Messagebox.ok(title='Success!', message='Your expense has been deleted!', parent=Dashboard.TopLevel)
+        dialogs.Messagebox.ok(title='Success!', message='Your budget has been reset!', parent=Dashboard.TopLevel)
 
 def validate_input(event, textvar):
     selected_item = textvar.get()
